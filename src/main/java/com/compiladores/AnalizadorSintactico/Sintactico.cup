@@ -1,0 +1,337 @@
+package com.compiladores.AnalizadorSintactico;
+
+import java_cup.runtime.*;
+import com.compiladores.Abstracto.Instruccion;
+import com.compiladores.AnalizadorLexico.Lexico;
+import java.util.LinkedList;
+import java.util.Arrays;
+
+//Expresiones
+import com.compiladores.Expresiones.Aritmeticas.*;
+import com.compiladores.Expresiones.Relacionales.*;
+import com.compiladores.Expresiones.Logicas.*;
+import com.compiladores.Expresiones.Nativo;
+import com.compiladores.Expresiones.Variables.*;
+import com.compiladores.Expresiones.Casteos.*;
+
+//Instrucciones
+import com.compiladores.Instrucciones.Print;
+import com.compiladores.Instrucciones.Declaracion;
+import com.compiladores.Instrucciones.Sentencias.Control.*;
+import com.compiladores.Instrucciones.Sentencias.Ciclicas.*;
+import com.compiladores.Instrucciones.Sentencias.Transferencia.*;
+
+//Simobolos
+import com.compiladores.Simbolo.Tipo;
+import com.compiladores.Simbolo.TipoDato;
+
+//Errores
+import com.compiladores.Excepciones.Errores;
+
+parser code
+{:
+    Lexico s;
+    parser(Lexico s){this.s = s;}
+
+    public LinkedList<Errores> listaErrores = new LinkedList<>();
+    
+    public void syntax_error(Symbol s){
+
+        listaErrores.add(new Errores("SINTACTICO RECUPERABLE", "No se esperaba el componente "+ s.value, s.left, s.right));
+
+        System.out.println("> Error Sintactico en la linea " + (s.left) + " y columna " + (s.right) + ". No se esperaba el componente: " + (s.value) + ".");
+    }
+
+    public void unrecovered_syntax_error (Symbol s){
+        listaErrores.add(new Errores("SINTACTICO NO RECUPERABLE","No se esperaba el componente "+ s.value, s.left, s.right));    
+
+        System.out.println("> Error Sintactico no recuperable en la linea" + (s.left) + " y columna " + (s.right) + ". No se esperaba el componente: " + (s.value) + ".");
+
+    }
+
+:}
+
+action code
+{:
+    String tipoD = "";
+    String idacumulado = "";
+:}
+
+terminal SUMA, RESTA, DIV, MULTI, UMENOS;
+terminal PARA, PARC, DOBP, IGUAL, CIERRE, COMA, PUNTO, RANGO, SUBRANGO;
+terminal VAR, CONST, TRUE , FALSE, POTENCIA, MOD, DEFAULT;
+terminal IF, MATCH, WHILE, FOR, DO, RETURN, ELSE, TYPE, OF,BEGIN, END, PACKED, RECORD, ARRAY, THEN, TO, PROGRAM;
+terminal IGUALIGUAL, DIFIGUAL, MENORQ, MENORIGQ, MAYORQ, MAYORIGQ;
+terminal OR, AND, XOR, NOT;
+terminal INCRE, DECRE;
+terminal LLAVEA, LLAVEC, CORA, CORC; 
+terminal INT, CADENA, REAL, BOOL, CHAR, IMPRIMIR;
+terminal String STRING_LITERAL, ENTERO, DECIMAL,CHAR_LITERAL, ID,LEER;
+terminal String BREAK, CONTINUE;
+
+
+non terminal LinkedList<Instruccion> ini, instrucciones,declaracion, listadeclaraciontipo, declaracionconst, declaracionvar, listadeclaracionvar, declaraciontype,listadeclaraciontype, declaraciones, instruccionesincierre,iftipos;
+non terminal LinkedList<Caso> casos;
+non terminal Caso casodefault, caso;
+non terminal Instruccion instruccion, asignacion , declaraciontipox, sif, smatch, cfor, records, declaracionsubrangos, declaracionrango, declaracionarray, declaracionarreglo, declaracionrecord, secuenciaif;
+non terminal Instruccion actualizarfor;
+non terminal Instruccion swhile, sdowhile;
+non terminal Instruccion sbreak, scontinue;
+non terminal booleanos ;
+non terminal Tipo tipo;
+non terminal Instruccion expresion;
+non terminal LinkedList<Instruccion>  asignartipos,variables, declaraciontipo;
+non terminal LinkedList<String> listaids;
+non terminal optionacierre;
+
+precedence left OR;
+precedence left AND;
+precedence left XOR;
+precedence right NOT;
+precedence left IGUALIGUAL, DIFIGUAL, MENORQ, MENORIGQ, MAYORQ, MAYORIGQ;
+precedence left SUMA, RESTA;
+precedence left MULTI, DIV,MOD;
+precedence nonassoc POTENCIA;
+precedence right UMENOS;
+precedence left ELSE;
+
+
+
+start with ini;
+
+ini ::=
+     PROGRAM ID CIERRE declaraciones:a BEGIN instrucciones:b END CIERRE {: a.addAll(b); RESULT = a; :}
+;
+
+instrucciones ::=
+   instrucciones:a instruccion:b CIERRE {: RESULT = a; RESULT.add(b); :}
+ | instruccion:a  CIERRE{: RESULT = new LinkedList<>(); RESULT.add(a); :}
+ | error CIERRE
+
+;
+
+
+secuenciaif::=
+    IF PARA expresion:a PARC THEN iftipos:b   {:   RESULT = new IF(a, b, aleft, aright);:}
+   |IF PARA expresion:a PARC THEN iftipos:b ELSE  iftipos:c {: RESULT = new IF(a, b,c, aleft, aright);:}
+;
+
+iftipos::=
+     instruccion:a {:RESULT = new LinkedList<>(); RESULT.add(a); :}
+   | BEGIN instruccionesincierre:a CIERRE END  {: RESULT =a; :}
+;
+
+instruccionesincierre ::=
+    instruccion:a instruccionesincierre:b  {: if (b != null){b.addFirst(a); RESULT = b;} else{ b = new LinkedList<>(Arrays.asList(a));  RESULT = b;}:}
+    |/* empty */
+;
+
+instruccion ::= 
+   IMPRIMIR PARA expresion:a PARC     {:   RESULT = new Print(a, aleft, aright);   :}
+  |asignacion:a     {: RESULT = a; :}
+  |secuenciaif:a     {: RESULT = a; :}
+  //|sif:a            {: RESULT = a; :}
+  //|smatch:a         {: RESULT = a; :}
+  |cfor:a           {: RESULT = a; :}
+  //|swhile:a         {: RESULT = a; :}
+  |sdowhile:a       {: RESULT = a; :}  
+  |sbreak:a         {: RESULT = a; :}
+  |scontinue:a      {: RESULT = a; :}
+;
+
+
+expresion ::= RESTA expresion:a             {:   RESULT = new Aritmeticas(a, OperadoresAritmeticos.NEGACION, aleft, aright);   :} %prec UMENOS
+            | expresion:a POTENCIA expresion:b   {:   RESULT = new Aritmeticas(a, b, OperadoresAritmeticos.POTENCIA, aleft, aright);   :}
+            | expresion:a MOD expresion:b   {:   RESULT = new Aritmeticas(a, b, OperadoresAritmeticos.MODULO, aleft, aright);   :}
+            | expresion:a SUMA expresion:b   {:   RESULT = new Aritmeticas(a, b, OperadoresAritmeticos.SUMA, aleft, aright);   :}
+            | expresion:a RESTA expresion:b   {:   RESULT = new Aritmeticas(a, b, OperadoresAritmeticos.RESTA, aleft, aright);   :}
+            | expresion:a MULTI expresion:b   {:   RESULT = new Aritmeticas(a, b, OperadoresAritmeticos.MULTIPLICACION, aleft, aright);   :}
+            | expresion:a DIV expresion:b   {:   RESULT = new Aritmeticas(a, b, OperadoresAritmeticos.DIVISION, aleft, aright);   :}
+            | expresion:a IGUALIGUAL expresion:b   {:   RESULT = new Relacionales(a, b, OperadoresRelacionales.IGUALACION, aleft, aright);   :}
+            | expresion:a DIFIGUAL expresion:b   {:   RESULT = new Relacionales(a, b, OperadoresRelacionales.DIFERENCIA, aleft, aright);   :}
+            | expresion:a MENORQ expresion:b   {:   RESULT = new Relacionales(a, b, OperadoresRelacionales.MENORQ, aleft, aright);   :}
+            | expresion:a MENORIGQ expresion:b   {:   RESULT = new Relacionales(a, b, OperadoresRelacionales.MENORIGQ, aleft, aright);   :}
+            | expresion:a MAYORQ expresion:b   {:   RESULT = new Relacionales(a, b, OperadoresRelacionales.MAYORQ, aleft, aright);   :}
+            | expresion:a MAYORIGQ expresion:b   {:   RESULT = new Relacionales(a, b, OperadoresRelacionales.MAYORIGQ, aleft, aright);   :}
+            | expresion:a OR expresion:b   {:   RESULT = new Logicos(a, b, OperadoresLogicos.OR, aleft, aright);   System.out.println("Result a  = " + Boolean.parseBoolean(a.toString()) + "  Result b = " + Boolean.parseBoolean(b.toString())); :}
+            | expresion:a AND expresion:b   {:   RESULT = new Logicos(a, b, OperadoresLogicos.AND, aleft, aright);   :}
+            | expresion:a XOR expresion:b   {:   RESULT = new Logicos(a, b, OperadoresLogicos.XOR, aleft, aright);   :}
+            | NOT expresion:a   {:   RESULT = new Logicos(a, OperadoresLogicos.NOT, aleft, aright);   :}
+            | PARA expresion:a PARC  {:   RESULT = a;   :}
+            | ENTERO:a      {:   RESULT = new Nativo(Integer.parseInt(a), new Tipo(TipoDato.ENTERO), aleft, aright );   :}
+            | DECIMAL:a     {:   RESULT = new Nativo(new Double(a), new Tipo(TipoDato.DECIMAL), aleft, aright );   :}
+            | STRING_LITERAL:a      {:   RESULT = new Nativo(a, new Tipo(TipoDato.CADENA), aleft, aright );   :}
+            | CHAR_LITERAL:a      {:  RESULT = new Nativo(a, new Tipo(TipoDato.CARACTER), aleft, aright );   :}
+            | booleanos:a      {:   RESULT = new Nativo(a, new Tipo(TipoDato.BOOLEANO), aleft, aright );   :}
+            | ID:a          {:  RESULT = new AcessoVar(a,aleft, aright);:}
+;
+
+booleanos ::= 
+    TRUE:a    {:   RESULT = true;   :}
+   |FALSE:a   {:   RESULT = false;   :}
+;
+
+
+declaraciones ::=
+    declaracion:a {:if (a!=null){RESULT = a;} :}
+   |declaracion:a declaraciones:b {: RESULT = a; if(b!=null ){ a.addAll(b); RESULT = a;} :}
+;
+
+declaracion ::=
+    declaracionconst:a  {: RESULT = a;  System.out.println(Arrays.toString(a.toArray()));:}
+   |declaraciontype:a    {: :}
+   |declaracionvar:a     {: RESULT = a;  System.out.println(Arrays.toString(a.toArray()));:}
+;
+
+declaracionconst ::=
+    CONST {:tipoD = "const";:}listadeclaraciontipo:a  {: RESULT = a; System.out.println("Valor de las declaraciones "  + a.toArray());:}
+;
+
+listadeclaraciontipo ::=
+     // declaraciontipo:a  {: RESULT = new LinkedList<>(Arrays.asList(a)); :}
+    declaraciontipo:a CIERRE listadeclaraciontipo:b     {: if(b!= null){a.addAll(b); } RESULT =a;:}
+    | /* empty */
+;
+
+declaraciontipo ::=
+    ID:a listaids:b DOBP tipo:c IGUAL expresion:d {: RESULT = new LinkedList<>(Arrays.asList( new Declaracion(tipoD, a, d,c, aleft, aright))); if (b!=null){for (String ins :b){RESULT.add(new Declaracion(tipoD, ins, d,c, aleft, aright));}}:}
+   |ID:a listaids:b IGUAL expresion:c  {: RESULT =new LinkedList<>(Arrays.asList( new Declaracion(tipoD, a, c, aleft, aright))); if (b!=null){for (String ins :b){RESULT.add(new Declaracion(tipoD, ins,c, aleft, aright));}}:}
+;
+
+
+declaraciontype ::=
+    TYPE {:tipoD = "type"; System.out.println("Type");:}asignartipos:a  {::}
+;
+
+asignartipos ::=
+    //listadeclaraciontype:a {: :}
+    listadeclaraciontype:a CIERRE asignartipos:b {: :}
+   | /* empty */
+;
+
+listadeclaraciontype::=
+     ID:a COMA {:System.out.println(" ID , listadeclaracion");:}listadeclaraciontype:b {: :}
+    |ID:a {:System.out.println(" ID 2 " + a);:}  IGUAL  tipo:b  {::}
+
+;
+
+
+
+declaracionvar ::=
+    VAR {:tipoD = "var";:}listadeclaracionvar:a  {: RESULT = a; :}
+;
+
+listadeclaracionvar ::=
+      variables:a  CIERRE listadeclaracionvar:b      {:  if(b!= null){a.addAll(b); } RESULT =a;  :}
+     | /* empty */
+;
+
+variables ::=
+    ID:a listaids:b DOBP tipo:c IGUAL expresion:d  {: RESULT = new LinkedList<>(Arrays.asList( new Declaracion(tipoD,a,d, c, aleft, aright))); if(b!=null){for(String ins: b){RESULT.add(new Declaracion(tipoD,ins,d, c, aleft, aright));}} :}
+   |ID:a listaids:b IGUAL expresion:c  {: RESULT = new LinkedList<>(Arrays.asList(  new Declaracion(tipoD, a, c, bleft, bright)));  if(b!=null){for(String ins: b){RESULT.add(new Declaracion(tipoD,ins, c, aleft, aright));}}:}
+   |ID:a listaids:b DOBP tipo:c {: RESULT =new LinkedList<>(Arrays.asList( new Declaracion(tipoD, a, c, aleft, aright))); if (b!=null){for (String ins :b){RESULT.add(new Declaracion(tipoD, ins,c, aleft, aright));}}:}
+;
+
+listaids ::=
+    COMA ID:a listaids:b {: System.out.println("Valor a = " + a); if (b != null){b.addFirst(a); RESULT = b;} else{ b = new LinkedList<>(Arrays.asList(a));  RESULT = b;}  :}
+   | /* empty */
+ ;
+
+
+declaracionsubrangos::=
+    ID:a COMA declaracionsubrangos:b {: :}
+   |ID:a IGUAL expresion:b SUBRANGO expresion:c CIERRE
+;
+
+declaracionrango ::=
+     ID:a COMA declaracionrango:b {: :}
+   | ID:a IGUAL expresion:b RANGO expresion:c CIERRE
+
+;
+
+declaracionarreglo ::=
+    ID:a COMA declaracionrango:b {: :}
+   |ID:a IGUAL ARRAY CORA expresion:b RANGO expresion:c CORC OF tipo:d CIERRE
+;
+
+records ::=
+    ID:a IGUAL RECORD declaracionrecord:b END CIERRE {: :}
+;
+
+declaracionrecord ::=
+      ID:a DOBP PACKED ARRAY CORA expresion:b RANGO expresion:c CORC OF tipo:d CIERRE declaracionrecord
+     |ID:a DOBP PACKED ARRAY CORA expresion:b RANGO expresion:c CORC OF tipo:d CIERRE
+     |ID:a DOBP tipo:b CIERRE declaracionrecord
+     |ID:a DOBP tipo:b CIERRE
+;
+
+asignacion ::= 
+    ID:a IGUAL expresion:b  {: RESULT = new AsignacionVar(a, b, aleft, aright);  :}
+;
+
+sif ::=
+    IF PARA expresion:a PARC THEN instruccionesincierre:b   {:   RESULT = new IF(a, b, aleft, aright);:}
+   |IF PARA expresion:a PARC THEN instruccionesincierre:b ELSE instruccionesincierre:c  {:   RESULT = new IF(a, b, c, aleft, aright);:}
+    //IF PARA expresion:a PARC THEN instruccion:b   {:   RESULT = new IF(a, b, aleft, aright);   :}
+    //IF PARA expresion:a PARC THEN BEGIN instruccionesincierre:b CIERRE END {:   RESULT = new IF(a, b, aleft, aright);   :}
+   //|IF PARA expresion:a PARC THEN instruccion:b ELSE BEGIN instruccionesincierre:c CIERRE END {:   RESULT = new IF(a, b,c, aleft, aright);   :}
+   //|IF PARA expresion:a PARC THEN instruccionesincierre:b  ELSE BEGIN instruccionesincierre:c CIERRE END {:   RESULT = new IF(a, b,c, aleft, aright);   :}
+  // |IF PARA expresion:a PARC THEN instruccionesincierre:b  ELSE sif:c {:  RESULT = new IF(a, b,c, aleft, aright);   :}
+   //|/* empty */
+;
+
+
+
+smatch ::=
+    MATCH expresion:a LLAVEA casos:b casodefault:c LLAVEC {:  RESULT = new MATCH(a, b, c, aleft, aright);   :}
+   |MATCH expresion:a LLAVEA casos:b  LLAVEC {:  RESULT = new MATCH(a, b, aleft, aright);   :}
+   |MATCH expresion:a LLAVEA casodefault:b  LLAVEC {:  RESULT = new MATCH(a,b, aleft, aright);   :}
+;
+
+cfor ::= 
+    FOR ID:a DOBP IGUAL ENTERO:b TO ENTERO:c DO instrucciones:d CIERRE //{:RESULT = new FOR(a,b,c,d,aleft,aright); :}
+;
+
+actualizarfor ::=
+    ID:a IGUAL expresion:b {: RESULT = new AsignacionVar(a,b, aleft, aright);  :}
+   |ID:a INCRE {: RESULT = new AsignacionVar(a,"incre", aleft, aright);  :}
+   |ID:a DECRE {: RESULT = new AsignacionVar(a,"decre", aleft, aright);  :}
+;
+
+swhile ::=
+    WHILE PARA expresion:a PARC LLAVEA instrucciones:b LLAVEC {: RESULT = new WHILE(a,b, aleft, aright);:}
+;
+
+sdowhile ::=
+   WHILE  expresion:a  DO BEGIN instrucciones:b END   {: RESULT = new DOWHILE(a,b, aleft, aright);:}
+;
+
+sbreak ::=
+    BREAK:a CIERRE      {: RESULT = new BREAK(aleft, aright);     :}
+;
+
+scontinue ::=
+    CONTINUE:a CIERRE      {:    RESULT = new CONTINUE(aleft, aright);     :}
+;
+
+casos ::=
+       casos:a caso:b  {: RESULT = a; RESULT.add(b); :}
+    | caso:a  {: RESULT = new LinkedList<>(); RESULT.add(a); :}
+;
+
+caso ::= 
+    expresion:a IGUAL MAYORQ LLAVEA instrucciones:b  LLAVEC {:  RESULT = new Caso(a, b, true, aleft, aright);   :}
+; 
+
+casodefault ::=
+    DEFAULT IGUAL MAYORQ LLAVEA instrucciones:a  LLAVEC {:  RESULT = new Caso(null, a, false, aleft, aright);   :}
+;
+
+tipo ::=
+    INT     {: RESULT = new Tipo(TipoDato.ENTERO);:}
+   |REAL  {: RESULT = new Tipo(TipoDato.DECIMAL);:}
+   |CADENA  {: RESULT = new Tipo(TipoDato.CADENA);:}
+   |CHAR  {: RESULT = new Tipo(TipoDato.CARACTER);:}
+   |BOOL  {: RESULT = new Tipo(TipoDato.BOOLEANO);:}
+;
+
