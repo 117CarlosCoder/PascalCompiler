@@ -10,25 +10,25 @@ import com.compiladores.Simbolo.TipoDato;
 import java.util.LinkedList;
 
 
-public class MATCH extends Instruccion{
+public class CASE extends Instruccion{
     private Instruccion expresion;
     private LinkedList<Caso> casos;
     private Caso defaultcaso;
 
-    public MATCH(Instruccion expresion, LinkedList<Caso> casos, Caso defaultcaso, int linea, int columna) {
+    public CASE(Instruccion expresion, LinkedList<Caso> casos, Caso defaultcaso, int linea, int columna) {
         super(new Tipo(TipoDato.VOID), linea, columna);
         this.expresion = expresion;
         this.casos = casos;
         this.defaultcaso = defaultcaso;
     }
     
-    public MATCH(Instruccion expresion, LinkedList<Caso> casos, int linea, int columna) {
+    public CASE(Instruccion expresion, LinkedList<Caso> casos, int linea, int columna) {
         super(new Tipo(TipoDato.VOID), linea, columna);
         this.expresion = expresion;
         this.casos = casos;
     }
     
-    public MATCH( Instruccion expresion,Caso defaultcaso, int linea, int columna) {
+    public CASE(Instruccion expresion, Caso defaultcaso, int linea, int columna) {
         super(new Tipo(TipoDato.VOID), linea, columna);
         this.expresion = expresion;
         this.defaultcaso = defaultcaso;

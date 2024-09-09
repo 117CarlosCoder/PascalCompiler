@@ -60,7 +60,7 @@ action code
 terminal SUMA, RESTA, DIV, MULTI, UMENOS;
 terminal PARA, PARC, DOBP, IGUAL, CIERRE, COMA, PUNTO, RANGO, SUBRANGO;
 terminal VAR, CONST, TRUE , FALSE, POTENCIA, MOD, DEFAULT;
-terminal IF, MATCH, WHILE, FOR, DO, RETURN, ELSE, TYPE, OF,BEGIN, END, PACKED, RECORD, ARRAY, THEN, TO, PROGRAM, REPEAT, UNTIL;
+terminal IF, CASE, WHILE, FOR, DO, RETURN, ELSE, TYPE, OF,BEGIN, END, PACKED, RECORD, ARRAY, THEN, TO, PROGRAM, REPEAT, UNTIL;
 terminal IGUALIGUAL, DIFIGUAL, MENORQ, MENORIGQ, MAYORQ, MAYORIGQ;
 terminal OR, AND, XOR, NOT;
 terminal INCRE, DECRE;
@@ -70,19 +70,19 @@ terminal String STRING_LITERAL, ENTERO, DECIMAL,CHAR_LITERAL, ID,LEER;
 terminal String BREAK, CONTINUE;
 
 
-non terminal LinkedList<Instruccion> ini, instrucciones, instruccionesincierre,declaracion ;
+non terminal LinkedList<Instruccion> ini, instrucciones, instruccionesincierre, otrasinstrucciones,declaracion ;
 non terminal LinkedList<Instruccion> listadeclaraciontipo, declaracionconst, declaracionvar, listadeclaracionvar, declaraciontype,listadeclaraciontype, declaraciones, declaraciontipo;
 non terminal LinkedList<Caso> casos;
 non terminal Caso casodefault, caso;
 non terminal Instruccion instruccion, asignacion , declaracionsubrangos, declaracionrango, declaracionarray , declaracionarreglo, declaracionrecord;
-non terminal Instruccion smatch, cfor, screcords, sif;
+non terminal Instruccion scase, cfor, screcords, sif;
 non terminal Instruccion actualizarfor;
 non terminal Instruccion swhile, srepeat;
 non terminal Instruccion sbreak, scontinue;
 non terminal booleanos ;
 non terminal Tipo tipo;
 non terminal Instruccion expresion;
-non terminal LinkedList<Instruccion>  asignartipos, variables, iftipos;
+non terminal LinkedList<Instruccion>  asignartipos, variables, iftipos, subcasos,listacasos;
 non terminal LinkedList<String> listaids;
 non terminal optionacierre;
 
@@ -132,7 +132,7 @@ instruccion ::=
    IMPRIMIR PARA expresion:a PARC     {:   RESULT = new Print(a, aleft, aright);   :}
   |asignacion:a     {: RESULT = a; :}
   |sif:a     {: RESULT = a; :}
-  //|smatch:a         {: RESULT = a; :}
+  |scase:a         {: RESULT = a; :}
   |cfor:a           {: RESULT = a; :}
   |swhile:a         {: RESULT = a; :}
   |srepeat:a       {: RESULT = a; :}
@@ -269,10 +269,10 @@ asignacion ::=
     ID:a DOBP IGUAL expresion:b  {: RESULT = new AsignacionVar(a, b, aleft, aright);  :}
 ;
 
-smatch ::=
-    MATCH expresion:a LLAVEA casos:b casodefault:c LLAVEC {:  RESULT = new MATCH(a, b, c, aleft, aright);   :}
-   |MATCH expresion:a LLAVEA casos:b  LLAVEC {:  RESULT = new MATCH(a, b, aleft, aright);   :}
-   |MATCH expresion:a LLAVEA casodefault:b  LLAVEC {:  RESULT = new MATCH(a,b, aleft, aright);   :}
+scase ::=
+    CASE expresion:a OF casos:b casodefault:c END {:RESULT = new CASE(a, b, c, aleft, aright); :}
+   |CASE expresion:a OF casos:b END  {: RESULT = new CASE(a, b, aleft, aright); :}
+   |CASE expresion:a OF casodefault:b  END {: RESULT = new CASE(a,b, aleft, aright);  :}
 ;
 
 cfor ::= 
@@ -302,16 +302,27 @@ scontinue ::=
 ;
 
 casos ::=
-       casos:a caso:b  {: RESULT = a; RESULT.add(b); :}
+       casos:a caso:b {: RESULT = a; RESULT.add(b); :}
     | caso:a  {: RESULT = new LinkedList<>(); RESULT.add(a); :}
 ;
 
+
 caso ::= 
-    expresion:a IGUAL MAYORQ LLAVEA instrucciones:b  LLAVEC {:  RESULT = new Caso(a, b, true, aleft, aright);   :}
-; 
+    listacasos:a DOBP subcasos:b {:   for (Instruccion ins : a){RESULT =new Caso(ins, b, true, aleft, aright);  } :}
+;
+
+listacasos ::=
+    expresion:a COMA  listacasos:b {: if (b != null){b.addFirst(a); RESULT = b;} else{ b = new LinkedList<>(Arrays.asList(a));  RESULT = b;}  :}
+   |expresion:a {: RESULT = new LinkedList<>(Arrays.asList(a)); :}
+;
+
+subcasos::=
+      instruccion:b CIERRE {: RESULT = new LinkedList<>(Arrays.asList(b)); :}
+    | BEGIN instruccionesincierre:b END CIERRE {: RESULT = b; :}
+;
 
 casodefault ::=
-    DEFAULT IGUAL MAYORQ LLAVEA instrucciones:a  LLAVEC {:  RESULT = new Caso(null, a, false, aleft, aright);   :}
+    ELSE  instruccionesincierre:a   {:  RESULT = new Caso(null, a, false, aleft, aright);   :}
 ;
 
 tipo ::=

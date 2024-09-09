@@ -68,7 +68,7 @@ Id = [a-zA-Z_][a-zA-Z0-9_-]*
 <YYINITIAL> "type" { return new Symbol(sym.TYPE, yyline,yycolumn, yytext()); }
 <YYINITIAL> "of" { return new Symbol(sym.OF, yyline,yycolumn, yytext()); }
 <YYINITIAL> "if" { return new Symbol(sym.IF, yyline,yycolumn, yytext()); }
-<YYINITIAL> "match" { return new Symbol(sym.MATCH, yyline,yycolumn, yytext()); }
+<YYINITIAL> "case" { return new Symbol(sym.CASE, yyline,yycolumn, yytext()); }
 <YYINITIAL> "while" { return new Symbol(sym.WHILE, yyline,yycolumn, yytext()); }
 <YYINITIAL> "for" { return new Symbol(sym.FOR, yyline,yycolumn, yytext()); }
 <YYINITIAL> "do" { return new Symbol(sym.DO, yyline,yycolumn, yytext()); }

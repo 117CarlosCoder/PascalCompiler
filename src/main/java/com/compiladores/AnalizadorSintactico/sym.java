@@ -22,7 +22,6 @@ public class sym {
   public static final int MAYORIGQ = 47;
   public static final int FALSE = 19;
   public static final int NOT = 51;
-  public static final int MATCH = 24;
   public static final int IGUALIGUAL = 42;
   public static final int ARRAY = 36;
   public static final int MULTI = 5;
@@ -73,6 +72,7 @@ public class sym {
   public static final int RANGO = 14;
   public static final int CHAR_LITERAL = 67;
   public static final int BEGIN = 32;
+  public static final int CASE = 24;
   public static final int CADENA = 59;
   public static final int PROGRAM = 39;
   public static final int AND = 49;
@@ -105,7 +105,7 @@ public class sym {
   "MOD",
   "DEFAULT",
   "IF",
-  "MATCH",
+  "CASE",
   "WHILE",
   "FOR",
   "DO",
