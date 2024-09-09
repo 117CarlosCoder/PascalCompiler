@@ -13,12 +13,12 @@ import com.compiladores.Simbolo.TipoDato;
 
 import java.util.LinkedList;
 
-public class DOWHILE extends Instruccion {
+public class REPEAT extends Instruccion {
 
     private Instruccion condicion;
     private LinkedList<Instruccion> instrucciones;
 
-    public DOWHILE(Instruccion condicion, LinkedList<Instruccion> instrucciones, int linea, int columna) {
+    public REPEAT(Instruccion condicion, LinkedList<Instruccion> instrucciones, int linea, int columna) {
         super(new Tipo(TipoDato.VOID), linea, columna);
         this.condicion = condicion;
         this.instrucciones = instrucciones;
@@ -27,7 +27,7 @@ public class DOWHILE extends Instruccion {
     @Override
     public Object interpretar(Arbol arbol, TablaSimbolos tabla) {
         var nuevatabla = new TablaSimbolos(tabla);
-        nuevatabla.setNombre(tabla.getNombre() + "-DOWHILE");
+        nuevatabla.setNombre(tabla.getNombre() + "-REPEAT");
 
         var cond = this.condicion.interpretar(arbol, nuevatabla);
         if (cond instanceof Errores) {
@@ -38,8 +38,10 @@ public class DOWHILE extends Instruccion {
             return new Errores("SEMANTICO", "la condicion", this.linea, this.columna);
         }
 
+        System.out.println("condicion: " + cond);
+
         var nuevatabla2 = new TablaSimbolos(tabla);
-        nuevatabla2.setNombre(tabla.getNombre() + "-DOWHILE");
+        nuevatabla2.setNombre(tabla.getNombre() + "-REPEAT");
         tabla.setTablasTotales(nuevatabla2);
 
         do {
@@ -47,7 +49,7 @@ public class DOWHILE extends Instruccion {
             for (Instruccion instruccion : instrucciones) {
 
                  if (instruccion instanceof Declaracion) {
-                    ((Declaracion) (instruccion)).setEntorno("dowhile");
+                    ((Declaracion) (instruccion)).setEntorno("repeat");
                 }
                 
 
@@ -63,7 +65,7 @@ public class DOWHILE extends Instruccion {
                 var resIns = instruccion.interpretar(arbol, nuevatabla2);
                 
                 if (resIns instanceof Declaracion) {
-                    ((Declaracion) (resIns)).setEntorno("dowhile");
+                    ((Declaracion) (resIns)).setEntorno("repeat");
                 }
                 
                 if (resIns instanceof CONTINUE) {
@@ -74,7 +76,7 @@ public class DOWHILE extends Instruccion {
                     return null;
                 }
             }
-        } while ((boolean) this.condicion.interpretar(arbol, nuevatabla));
+        } while (!(boolean) this.condicion.interpretar(arbol, nuevatabla));
 
         return null;
 

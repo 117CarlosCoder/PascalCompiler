@@ -1,8 +1,8 @@
 
 package com.compiladores.UI;
 
-import  com.compiladores.Abstracto.Instruccion;
-import  com.compiladores.AnalizadorLexico.Lexico;
+import com.compiladores.Abstracto.Instruccion;
+import com.compiladores.AnalizadorLexico.Lexico;
 import com.compiladores.AnalizadorSintactico.parser;
 import com.compiladores.Excepciones.Errores;
 import com.compiladores.Simbolo.Arbol;

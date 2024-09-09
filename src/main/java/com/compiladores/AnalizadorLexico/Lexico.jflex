@@ -86,19 +86,21 @@ Id = [a-zA-Z_][a-zA-Z0-9_-]*
 <YYINITIAL> "array" { return new Symbol(sym.ARRAY, yyline,yycolumn, yytext()); }
 <YYINITIAL> "then" { return new Symbol(sym.THEN, yyline,yycolumn, yytext()); }
 <YYINITIAL> "to" { return new Symbol(sym.TO, yyline,yycolumn, yytext()); }
+<YYINITIAL> "repeat" { return new Symbol(sym.REPEAT, yyline,yycolumn, yytext()); }
+<YYINITIAL> "until" { return new Symbol(sym.UNTIL, yyline,yycolumn, yytext()); }
 
 <YYINITIAL>{
 
 "+" { return new Symbol(sym.SUMA, yyline,yycolumn, yytext()); }
 "-" { return new Symbol(sym.RESTA, yyline,yycolumn, yytext()); }
 "_" { return new Symbol(sym.DEFAULT, yyline,yycolumn, yytext()); }
-"/" { return new Symbol(sym.DIV, yyline,yycolumn, yytext()); }
+"div" { return new Symbol(sym.DIV, yyline,yycolumn, yytext()); }
 "*" { return new Symbol(sym.MULTI, yyline,yycolumn, yytext()); }
 "**" { return new Symbol(sym.POTENCIA, yyline,yycolumn, yytext()); }
-"%" { return new Symbol(sym.MOD, yyline,yycolumn, yytext()); }
+"mod" { return new Symbol(sym.MOD, yyline,yycolumn, yytext()); }
 "=" { return new Symbol(sym.IGUAL, yyline,yycolumn, yytext()); }
 "==" { return new Symbol(sym.IGUALIGUAL, yyline,yycolumn, yytext()); }
-"!=" { return new Symbol(sym.DIFIGUAL, yyline,yycolumn, yytext()); }
+"<>" { return new Symbol(sym.DIFIGUAL, yyline,yycolumn, yytext()); }
 "<" { return new Symbol(sym.MENORQ, yyline,yycolumn, yytext()); }
 "<=" { return new Symbol(sym.MENORIGQ, yyline,yycolumn, yytext()); }
 ">" { return new Symbol(sym.MAYORQ, yyline,yycolumn, yytext()); }

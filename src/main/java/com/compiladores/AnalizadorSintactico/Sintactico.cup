@@ -60,7 +60,7 @@ action code
 terminal SUMA, RESTA, DIV, MULTI, UMENOS;
 terminal PARA, PARC, DOBP, IGUAL, CIERRE, COMA, PUNTO, RANGO, SUBRANGO;
 terminal VAR, CONST, TRUE , FALSE, POTENCIA, MOD, DEFAULT;
-terminal IF, MATCH, WHILE, FOR, DO, RETURN, ELSE, TYPE, OF,BEGIN, END, PACKED, RECORD, ARRAY, THEN, TO, PROGRAM;
+terminal IF, MATCH, WHILE, FOR, DO, RETURN, ELSE, TYPE, OF,BEGIN, END, PACKED, RECORD, ARRAY, THEN, TO, PROGRAM, REPEAT, UNTIL;
 terminal IGUALIGUAL, DIFIGUAL, MENORQ, MENORIGQ, MAYORQ, MAYORIGQ;
 terminal OR, AND, XOR, NOT;
 terminal INCRE, DECRE;
@@ -70,17 +70,19 @@ terminal String STRING_LITERAL, ENTERO, DECIMAL,CHAR_LITERAL, ID,LEER;
 terminal String BREAK, CONTINUE;
 
 
-non terminal LinkedList<Instruccion> ini, instrucciones,declaracion, listadeclaraciontipo, declaracionconst, declaracionvar, listadeclaracionvar, declaraciontype,listadeclaraciontype, declaraciones, instruccionesincierre,iftipos;
+non terminal LinkedList<Instruccion> ini, instrucciones, instruccionesincierre,declaracion ;
+non terminal LinkedList<Instruccion> listadeclaraciontipo, declaracionconst, declaracionvar, listadeclaracionvar, declaraciontype,listadeclaraciontype, declaraciones, declaraciontipo;
 non terminal LinkedList<Caso> casos;
 non terminal Caso casodefault, caso;
-non terminal Instruccion instruccion, asignacion , declaraciontipox, sif, smatch, cfor, records, declaracionsubrangos, declaracionrango, declaracionarray, declaracionarreglo, declaracionrecord, secuenciaif;
+non terminal Instruccion instruccion, asignacion , declaracionsubrangos, declaracionrango, declaracionarray , declaracionarreglo, declaracionrecord;
+non terminal Instruccion smatch, cfor, screcords, sif;
 non terminal Instruccion actualizarfor;
-non terminal Instruccion swhile, sdowhile;
+non terminal Instruccion swhile, srepeat;
 non terminal Instruccion sbreak, scontinue;
 non terminal booleanos ;
 non terminal Tipo tipo;
 non terminal Instruccion expresion;
-non terminal LinkedList<Instruccion>  asignartipos,variables, declaraciontipo;
+non terminal LinkedList<Instruccion>  asignartipos, variables, iftipos;
 non terminal LinkedList<String> listaids;
 non terminal optionacierre;
 
@@ -100,7 +102,7 @@ precedence left ELSE;
 start with ini;
 
 ini ::=
-     PROGRAM ID CIERRE declaraciones:a BEGIN instrucciones:b END CIERRE {: a.addAll(b); RESULT = a; :}
+     PROGRAM ID CIERRE declaraciones:a BEGIN instrucciones:b END PUNTO {: a.addAll(b); RESULT = a; :}
 ;
 
 instrucciones ::=
@@ -111,30 +113,29 @@ instrucciones ::=
 ;
 
 
-secuenciaif::=
-    IF PARA expresion:a PARC THEN iftipos:b   {:   RESULT = new IF(a, b, aleft, aright);:}
-   |IF PARA expresion:a PARC THEN iftipos:b ELSE  iftipos:c {: RESULT = new IF(a, b,c, aleft, aright);:}
+sif::=
+    IF  expresion:a  THEN iftipos:b   {:   RESULT = new IF(a, b, aleft, aright);:}
+   |IF  expresion:a  THEN iftipos:b ELSE  iftipos:c {: RESULT = new IF(a, b,c, aleft, aright);:}
 ;
 
 iftipos::=
      instruccion:a {:RESULT = new LinkedList<>(); RESULT.add(a); :}
-   | BEGIN instruccionesincierre:a CIERRE END  {: RESULT =a; :}
+   | BEGIN instruccionesincierre:a  END  {: RESULT =a; :}
 ;
 
 instruccionesincierre ::=
-    instruccion:a instruccionesincierre:b  {: if (b != null){b.addFirst(a); RESULT = b;} else{ b = new LinkedList<>(Arrays.asList(a));  RESULT = b;}:}
+    instruccion:a CIERRE instruccionesincierre:b  {: if (b != null){b.addFirst(a); RESULT = b;} else{ b = new LinkedList<>(Arrays.asList(a));  RESULT = b;}:}
     |/* empty */
 ;
 
 instruccion ::= 
    IMPRIMIR PARA expresion:a PARC     {:   RESULT = new Print(a, aleft, aright);   :}
   |asignacion:a     {: RESULT = a; :}
-  |secuenciaif:a     {: RESULT = a; :}
-  //|sif:a            {: RESULT = a; :}
+  |sif:a     {: RESULT = a; :}
   //|smatch:a         {: RESULT = a; :}
   |cfor:a           {: RESULT = a; :}
-  //|swhile:a         {: RESULT = a; :}
-  |sdowhile:a       {: RESULT = a; :}  
+  |swhile:a         {: RESULT = a; :}
+  |srepeat:a       {: RESULT = a; :}
   |sbreak:a         {: RESULT = a; :}
   |scontinue:a      {: RESULT = a; :}
 ;
@@ -169,6 +170,7 @@ expresion ::= RESTA expresion:a             {:   RESULT = new Aritmeticas(a, Ope
 booleanos ::= 
     TRUE:a    {:   RESULT = true;   :}
    |FALSE:a   {:   RESULT = false;   :}
+   //|ENTERO:a   {:  if (a.equals("0")){RESULT = false;} if (a.equals("1")){RESULT = true; } else { return new Errores("SEMANTICO", "No puede ingresar valores enteros que no sean 0 o 1", a.left, a.right);}   :}
 ;
 
 
@@ -188,7 +190,6 @@ declaracionconst ::=
 ;
 
 listadeclaraciontipo ::=
-     // declaraciontipo:a  {: RESULT = new LinkedList<>(Arrays.asList(a)); :}
     declaraciontipo:a CIERRE listadeclaraciontipo:b     {: if(b!= null){a.addAll(b); } RESULT =a;:}
     | /* empty */
 ;
@@ -204,7 +205,6 @@ declaraciontype ::=
 ;
 
 asignartipos ::=
-    //listadeclaraciontype:a {: :}
     listadeclaraciontype:a CIERRE asignartipos:b {: :}
    | /* empty */
 ;
@@ -254,7 +254,7 @@ declaracionarreglo ::=
    |ID:a IGUAL ARRAY CORA expresion:b RANGO expresion:c CORC OF tipo:d CIERRE
 ;
 
-records ::=
+screcords ::=
     ID:a IGUAL RECORD declaracionrecord:b END CIERRE {: :}
 ;
 
@@ -266,21 +266,8 @@ declaracionrecord ::=
 ;
 
 asignacion ::= 
-    ID:a IGUAL expresion:b  {: RESULT = new AsignacionVar(a, b, aleft, aright);  :}
+    ID:a DOBP IGUAL expresion:b  {: RESULT = new AsignacionVar(a, b, aleft, aright);  :}
 ;
-
-sif ::=
-    IF PARA expresion:a PARC THEN instruccionesincierre:b   {:   RESULT = new IF(a, b, aleft, aright);:}
-   |IF PARA expresion:a PARC THEN instruccionesincierre:b ELSE instruccionesincierre:c  {:   RESULT = new IF(a, b, c, aleft, aright);:}
-    //IF PARA expresion:a PARC THEN instruccion:b   {:   RESULT = new IF(a, b, aleft, aright);   :}
-    //IF PARA expresion:a PARC THEN BEGIN instruccionesincierre:b CIERRE END {:   RESULT = new IF(a, b, aleft, aright);   :}
-   //|IF PARA expresion:a PARC THEN instruccion:b ELSE BEGIN instruccionesincierre:c CIERRE END {:   RESULT = new IF(a, b,c, aleft, aright);   :}
-   //|IF PARA expresion:a PARC THEN instruccionesincierre:b  ELSE BEGIN instruccionesincierre:c CIERRE END {:   RESULT = new IF(a, b,c, aleft, aright);   :}
-  // |IF PARA expresion:a PARC THEN instruccionesincierre:b  ELSE sif:c {:  RESULT = new IF(a, b,c, aleft, aright);   :}
-   //|/* empty */
-;
-
-
 
 smatch ::=
     MATCH expresion:a LLAVEA casos:b casodefault:c LLAVEC {:  RESULT = new MATCH(a, b, c, aleft, aright);   :}
@@ -289,7 +276,7 @@ smatch ::=
 ;
 
 cfor ::= 
-    FOR ID:a DOBP IGUAL ENTERO:b TO ENTERO:c DO instrucciones:d CIERRE //{:RESULT = new FOR(a,b,c,d,aleft,aright); :}
+    FOR ID:a DOBP IGUAL expresion:b TO expresion:c DO BEGIN instruccionesincierre:d END {:RESULT = new FOR(a,b,c,d,aleft,aright); :}
 ;
 
 actualizarfor ::=
@@ -299,19 +286,19 @@ actualizarfor ::=
 ;
 
 swhile ::=
-    WHILE PARA expresion:a PARC LLAVEA instrucciones:b LLAVEC {: RESULT = new WHILE(a,b, aleft, aright);:}
+    WHILE expresion:a DO BEGIN instruccionesincierre:b  END  {: RESULT = new WHILE(a,b, aleft, aright);:}
 ;
 
-sdowhile ::=
-   WHILE  expresion:a  DO BEGIN instrucciones:b END   {: RESULT = new DOWHILE(a,b, aleft, aright);:}
+srepeat ::=
+    REPEAT instruccionesincierre:b UNTIL expresion:a     {: RESULT = new REPEAT(a,b, aleft, aright);:}
 ;
 
 sbreak ::=
-    BREAK:a CIERRE      {: RESULT = new BREAK(aleft, aright);     :}
+    BREAK:a       {: RESULT = new BREAK(aleft, aright);     :}
 ;
 
 scontinue ::=
-    CONTINUE:a CIERRE      {:    RESULT = new CONTINUE(aleft, aright);     :}
+    CONTINUE:a       {:    RESULT = new CONTINUE(aleft, aright);     :}
 ;
 
 casos ::=

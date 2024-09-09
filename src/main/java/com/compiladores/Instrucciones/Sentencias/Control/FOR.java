@@ -3,6 +3,7 @@ package com.compiladores.Instrucciones.Sentencias.Control;
 
 import com.compiladores.Abstracto.Instruccion;
 import com.compiladores.Excepciones.Errores;
+import com.compiladores.Expresiones.Variables.AsignacionVar;
 import com.compiladores.Instrucciones.Declaracion;
 import com.compiladores.Instrucciones.Sentencias.Transferencia.BREAK;
 import com.compiladores.Instrucciones.Sentencias.Transferencia.CONTINUE;
@@ -14,16 +15,16 @@ import com.compiladores.Simbolo.TipoDato;
 import java.util.LinkedList;
 
 public class FOR extends Instruccion{
-    private Instruccion asignacion;
-    private Instruccion condicion;
-    private Instruccion actualizacion;
+    private String idvariable;
+    private Instruccion vinicial;
+    private Instruccion vfinal;
     private LinkedList<Instruccion> instrucciones;
 
-    public FOR(Instruccion asignacion, Instruccion condicion, Instruccion actualizacion, LinkedList<Instruccion> instrucciones, int linea, int columna) {
+    public FOR(String idvariable, Instruccion vinicial, Instruccion vfinal, LinkedList<Instruccion> instrucciones, int linea, int columna) {
         super(new Tipo(TipoDato.VOID), linea, columna);
-        this.asignacion = asignacion;
-        this.condicion = condicion;
-        this.actualizacion = actualizacion;
+        this.idvariable = idvariable;
+        this.vinicial = vinicial;
+        this.vfinal = vfinal;
         this.instrucciones = instrucciones;
     }
     
@@ -33,81 +34,78 @@ public class FOR extends Instruccion{
     public Object interpretar(Arbol arbol, TablaSimbolos tabla) {
         var nuevabtabla = new TablaSimbolos(tabla);
         nuevabtabla.setNombre(tabla.getNombre() + "-FOR");
-        
-        
-        var res1 = this.asignacion.interpretar(arbol, nuevabtabla);
-        if(res1 instanceof Errores){
-            return res1;
+
+        var variable = tabla.getVariable(idvariable);
+
+        if (variable.getTipo().getTipo() != TipoDato.ENTERO){
+            return new Errores("SEMANTICO", "Error variable debe ser de valor entero", this.linea, this.columna);
         }
-        
-        var cond = this.condicion.interpretar(arbol, nuevabtabla);
-        if(cond instanceof Errores){
-            return cond;
+
+        var var1 = this.vinicial.interpretar(arbol, nuevabtabla);
+
+        if(var1 instanceof Errores){
+            return var1;
         }
-        
-        if (this.condicion.tipo.getTipo() != TipoDato.BOOLEANO) {
-            return new Errores("SEMANTICO", "La condicion debe ser de tipo bool", this.linea, this.columna);
+
+        if (!(var1 instanceof Integer)) {
+            return new Errores("SEMANTICO", "Error variable debe ser de valor entero", this.linea, this.columna);
         }
+
+        var var2 = this.vfinal.interpretar(arbol, nuevabtabla);
+
+        if(var2 instanceof Errores){
+            return var2;
+        }
+
+        if (!(var2 instanceof Integer)) {
+            return new Errores("SEMANTICO", "Error variable debe ser de valor entero", this.linea, this.columna);
+        }
+
         
         var nuevatabla2 = new TablaSimbolos(nuevabtabla);
         nuevatabla2.setNombre(tabla.getNombre() + "-FOR");
         tabla.setTablasTotales(nuevatabla2);
-        
-        while ((boolean) this.condicion.interpretar(arbol, nuevabtabla)) {            
-            
-            
+
+
+        for (int i = (int)var1; i <= (int) var2; i++) {
+
+            new AsignacionVar(idvariable,String.valueOf(i), this.linea, this.columna);
+
             for (Instruccion instruccion : instrucciones) {
                 if (instruccion != null) {
-                    
+
                     if (instruccion instanceof Declaracion) {
                         ((Declaracion) (instruccion)).setEntorno("for");
                     }
-                    
+
                     if (instruccion instanceof CONTINUE) {
                         break;
                     }
-                    
+
                     if (instruccion instanceof BREAK) {
                         return null;
                     }
-                    
-                    
 
-                    
-                    
+
                     var resIns = instruccion.interpretar(arbol, nuevatabla2);
-                    
+
                     if (resIns instanceof Declaracion) {
                         ((Declaracion) (resIns)).setEntorno("for");
                     }
-                    
+
                     if (resIns instanceof CONTINUE) {
                         break;
                     }
-                
+
                     if (resIns instanceof BREAK) {
                         return null;
                     }
-                    
-                    
-                    
-                    
+
+
                 }
-                
+
             }
-            
-            
-            
-            var actVar = this.actualizacion.interpretar(arbol, nuevabtabla);
-            
-            if (actVar instanceof Errores) {
-                return actVar;
-            }
-            
-            
-            
         }
-        
         
         
         return null;
