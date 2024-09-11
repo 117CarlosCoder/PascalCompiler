@@ -40,7 +40,7 @@ public class Suma extends Instruccion{
                     case TipoDato.CARACTER -> {
                         tipo.setTipo(TipoDato.ENTERO);
                         int sumaAscii = 0;
-                        try{
+                        /*try{
                             String palabra =  (String) op2;
                             op2 = palabra.toCharArray();
                             char[] charArray = (char[]) op2;
@@ -52,8 +52,8 @@ public class Suma extends Instruccion{
                         }catch(Exception e){
                             System.out.println("Error de conversion " +e);
                             sumaAscii = (int)((char)op2);
-                        }
-                        return (int) op1 + sumaAscii;
+                        }*/
+                        return op1.toString() + op2.toString();
                     }
                     case TipoDato.CADENA -> {
                         tipo.setTipo(TipoDato.CADENA);

@@ -20,7 +20,7 @@ public class Print extends Instruccion {
         if (resultado instanceof Errores) {
             return resultado;
         }
-        arbol.Print(resultado.toString());
+
         return null;
     }
     

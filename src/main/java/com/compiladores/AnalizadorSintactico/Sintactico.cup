@@ -18,6 +18,7 @@ import com.compiladores.Expresiones.Casteos.*;
 //Instrucciones
 import com.compiladores.Instrucciones.Print;
 import com.compiladores.Instrucciones.Declaracion;
+import com.compiladores.Instrucciones.Readln;
 import com.compiladores.Instrucciones.Llamada;
 import com.compiladores.Instrucciones.Procedure;
 import com.compiladores.Instrucciones.Sentencias.Control.*;
@@ -76,8 +77,9 @@ terminal String BREAK, CONTINUE;
 non terminal LinkedList<Instruccion> ini, instrucciones, instruccionesincierre, otrasinstrucciones,declaracion ;
 non terminal LinkedList<Instruccion> listadeclaraciontipo, declaracionconst, declaracionvar, listadeclaracionvar, declaraciontype,listadeclaraciontype, declaraciones, declaraciontipo, listaprocedure, declaracionprocedure;
 non terminal LinkedList<Caso> casos;
+non terminal Instruccion listprint;
 non terminal Caso casodefault, caso;
-non terminal Instruccion instruccion, asignacion , declaracionsubrangos, declaracionrango, declaracionarray , declaracionarreglo, declaracionrecord;
+non terminal Instruccion instruccion, asignacion , declaracionsubrangos, declaracionrango, declaracionarray , declaracionarreglo, declaracionrecord, readln;
 non terminal Instruccion scase, cfor, screcords, sif;
 non terminal Instruccion swhile, srepeat;
 non terminal Instruccion sbreak, scontinue;
@@ -111,6 +113,7 @@ instrucciones ::=
    instrucciones:a instruccion:b CIERRE {: RESULT = a; RESULT.add(b); :}
  | instruccion:a  CIERRE{: RESULT = new LinkedList<>(); RESULT.add(a); :}
  | error CIERRE
+ | error
 
 ;
 
@@ -123,15 +126,19 @@ sif::=
 iftipos::=
      instruccion:a {:RESULT = new LinkedList<>(); RESULT.add(a); :}
    | BEGIN instruccionesincierre:a  END  {: RESULT =a; :}
+   | error
 ;
 
 instruccionesincierre ::=
     instruccion:a CIERRE instruccionesincierre:b  {: if (b != null){b.addFirst(a); RESULT = b;} else{ b = new LinkedList<>(Arrays.asList(a));  RESULT = b;}:}
     |/* empty */
+    | error CIERRE
+    | error
 ;
 
 instruccion ::= 
-   IMPRIMIR PARA expresion:a PARC     {:   RESULT = new Print(a, aleft, aright);   :}
+   IMPRIMIR PARA listprint:a PARC     {:   RESULT = new Print(a, aleft, aright); :}
+  |LEER PARA ID:a listaids:b PARC     {: b = new LinkedList<>(Arrays.asList(a)); b.add(a); RESULT = new Readln(b, aleft, aright);   :}
   |asignacion:a     {: RESULT = a; :}
   |sif:a            {: RESULT = a; :}
   |scase:a          {: RESULT = a; :}
@@ -143,6 +150,12 @@ instruccion ::=
   |llamadas:a       {: RESULT = a; :}
 ;
 
+listprint ::=
+     expresion:a COMA listprint:b {:RESULT = new Union(a, b, OperadoresAritmeticos.SUMA, aleft, aright);     :}
+   | expresion:a  {: RESULT = a;  :}
+  | error
+
+ ;
 
 expresion ::= RESTA expresion:a             {:   RESULT = new Aritmeticas(a, OperadoresAritmeticos.NEGACION, aleft, aright);   :} %prec UMENOS
             | expresion:a POTENCIA expresion:b   {:   RESULT = new Aritmeticas(a, b, OperadoresAritmeticos.POTENCIA, aleft, aright);   :}
@@ -168,16 +181,20 @@ expresion ::= RESTA expresion:a             {:   RESULT = new Aritmeticas(a, Ope
             | booleanos:a      {:   RESULT = new Nativo(a, new Tipo(TipoDato.BOOLEANO), aleft, aright );   :}
             | ID:a          {:  RESULT = new AcessoVar(a,aleft, aright);:}
             | ID:a CORA expresion:b CORC          {:  RESULT = new AcessoVar(a,b,aleft, aright);:}
+
 ;
 
 llamadas ::=
     ID:a PARA paramsllamada:b PARC  {: RESULT = new Llamada(a,b,aleft, aright); :}
    |ID:a  {: RESULT = new Llamada(a,new LinkedList<Instruccion>(),aleft, aright); :}
+
 ;
 
 paramsllamada ::=
     paramsllamada:a COMA expresion:b    {: RESULT = a; RESULT.add(b); :}
    |expresion:a                         {: RESULT = new LinkedList<Instruccion>(); RESULT.add(a);:}
+  | error
+
 ;
 
 
@@ -191,6 +208,8 @@ booleanos ::=
 declaraciones ::=
     declaracion:a {:if (a!=null){RESULT = a;} :}
    |declaracion:a declaraciones:b {: RESULT = a; if(b!=null ){ a.addAll(b); RESULT = a;} :}
+  | error
+
 ;
 
 declaracion ::=
@@ -198,15 +217,18 @@ declaracion ::=
    |declaraciontype:a    {: :}
    |declaracionvar:a     {: RESULT = a;  System.out.println(Arrays.toString(a.toArray()));:}
    |procedure:b         {: RESULT = b; :}
+
 ;
 
 procedure ::=
     PROCEDURE listaprocedure:a {: RESULT = a; :}
+
 ;
 
 listaprocedure ::=
    declaracionprocedure:a CIERRE listaprocedure:b {: if(b!= null){a.addAll(b); } RESULT =a;:}
    |/* empty */
+
 ;
 
 declaracionprocedure::=
@@ -229,6 +251,8 @@ declaracionprocedure::=
 varprocedure::=
         declaracionvarprocedure:a    {: RESULT = a; :}
        | /* empty */
+  | error
+
 ;
 
 declaracionvarprocedure ::=
@@ -238,13 +262,17 @@ declaracionvarprocedure ::=
 listadeclaracionvarprocedure ::=
       variablesprocedure:a  CIERRE listadeclaracionvarprocedure:b      {:  if(b!= null){a.addAll(b); } RESULT =a;  :}
      | /* empty */
+  | error
+
 ;
 
 variablesprocedure ::=
     ID:a listaids:b DOBP tipo:c IGUAL expresion:d  {: RESULT = new LinkedList<>(Arrays.asList( new Declaracion(tipoD,a,d, c,"Procedure", aleft, aright))); if(b!=null){for(String ins: b){RESULT.addLast(new Declaracion(tipoD,ins,d, c,"Procedure", bleft, bright));}} :}
    |ID:a listaids:b IGUAL expresion:c  {: RESULT = new LinkedList<>(Arrays.asList(  new Declaracion(tipoD, a, c,"Procedure", aleft, aright)));  if(b!=null){for(String ins: b){RESULT.addLast(new Declaracion(tipoD,ins, c,"Procedure", bleft, bright));}}:}
    |ID:a listaids:b DOBP tipo:c {: RESULT =new LinkedList<>(Arrays.asList( new Declaracion(tipoD, a, c,"Procedure", aleft, aright))); if (b!=null){for (String ins :b){RESULT.addLast(new Declaracion(tipoD, ins,c,"Procedure", bleft, bright));}}:}
-   |ID:a listaids:b DOBP ARRAY CORA ENTERO:c RANGO ENTERO:d CORC OF tipo:e CORC CIERRE {:RESULT =new LinkedList<>(Arrays.asList(  new Declaracion(tipoD, a, e, "vector", c, d, aleft, aright))); System.out.println(d); {for (String ins :b){RESULT.addLast(new Declaracion(tipoD, ins, e, "vector", c, d, bleft, bright));}}:}
+   |ID:a listaids:b DOBP ARRAY CORA ENTERO:c RANGO ENTERO:d CORC OF tipo:e   {:RESULT =new LinkedList<>(Arrays.asList(  new Declaracion(tipoD, a, e, "vector", c, d, aleft, aright))); System.out.println(d); {for (String ins :b){RESULT.addLast(new Declaracion(tipoD, ins, e, "vector", c, d, bleft, bright));}}:}
+  | error
+
 ;
 
 params ::=
@@ -252,6 +280,7 @@ params ::=
    | params:a COMA ID:c DOBP tipo:b      {: RESULT = a; var hm2 = new HashMap<String, Object>(); hm2.put("id", c); hm2.put("tipo", b);  RESULT.add(hm2);:}
    | VAR ID:b DOBP tipo:a                 {: RESULT = new LinkedList<HashMap>(); var hm = new HashMap<String, Object>(); hm.put("id", b); hm.put("tipo", a);  RESULT.add(hm); :}
    | ID:b DOBP tipo:a                 {: RESULT = new LinkedList<HashMap>(); var hm = new HashMap<String, Object>(); hm.put("id", b); hm.put("tipo", a);  RESULT.add(hm); :}
+   | error
 ;
 
 declaracionconst ::=
@@ -266,6 +295,7 @@ listadeclaraciontipo ::=
 declaraciontipo ::=
     ID:a listaids:b DOBP tipo:c IGUAL expresion:d {: RESULT = new LinkedList<>(Arrays.asList( new Declaracion(tipoD, a, d,c, aleft, aright))); if (b!=null){for (String ins :b){RESULT.add(new Declaracion(tipoD, ins, d,c, bleft, bright));}}:}
    |ID:a listaids:b IGUAL expresion:c  {: RESULT =new LinkedList<>(Arrays.asList( new Declaracion(tipoD, a, c, aleft, aright))); if (b!=null){for (String ins :b){RESULT.add(new Declaracion(tipoD, ins,c, bleft, bright));}}:}
+
 ;
 
 
@@ -300,6 +330,7 @@ variables ::=
    |ID:a listaids:b IGUAL expresion:c  {: RESULT = new LinkedList<>(Arrays.asList(  new Declaracion(tipoD, a, c, aleft, aright)));  if(b!=null){for(String ins: b){RESULT.addLast(new Declaracion(tipoD,ins, c, bleft, bright));}}:}
    |ID:a listaids:b DOBP tipo:c {: RESULT =new LinkedList<>(Arrays.asList( new Declaracion(tipoD, a, c, aleft, aright))); if (b!=null){for (String ins :b){RESULT.addLast(new Declaracion(tipoD, ins,c, bleft, bright));}}:}
    |ID:a listaids:b DOBP ARRAY CORA ENTERO:c RANGO ENTERO:d CORC OF tipo:e   {:RESULT =new LinkedList<>(Arrays.asList(  new Declaracion(tipoD, a, e, "vector", c, d, aleft, aright))); System.out.println(d); if (b!=null){for (String ins :b){RESULT.addLast(new Declaracion(tipoD, ins, e, "vector", c, d, bleft, bright));}}:}
+
 ;
 
 listaids ::=
@@ -332,6 +363,8 @@ declaracionrecord ::=
      |ID:a DOBP PACKED ARRAY CORA expresion:b RANGO expresion:c CORC OF tipo:d CIERRE
      |ID:a DOBP tipo:b CIERRE declaracionrecord
      |ID:a DOBP tipo:b CIERRE
+     | error CIERRE
+     | error
 ;
 
 asignacion ::= 
@@ -342,20 +375,24 @@ asignacion ::=
 
 cfor ::= 
     FOR ID:a DOBP IGUAL expresion:b TO expresion:c DO BEGIN instruccionesincierre:d END {:RESULT = new FOR(a,b,c,d,aleft,aright); :}
+
 ;
 
 swhile ::=
     WHILE expresion:a DO BEGIN instruccionesincierre:b  END  {: RESULT = new WHILE(a,b, aleft, aright);:}
+
 ;
 
 srepeat ::=
     REPEAT instruccionesincierre:b UNTIL expresion:a     {: RESULT = new REPEAT(a,b, aleft, aright);:}
+
 ;
 
 scase ::=
     CASE expresion:a OF casos:b casodefault:c END {:RESULT = new CASE(a, b, c, aleft, aright); :}
    |CASE expresion:a OF casos:b END  {: RESULT = new CASE(a, b, aleft, aright); :}
    |CASE expresion:a OF casodefault:b  END {: RESULT = new CASE(a,b, aleft, aright);  :}
+
 ;
 
 casos ::=

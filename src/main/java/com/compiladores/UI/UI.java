@@ -450,6 +450,13 @@ public class UI extends javax.swing.JFrame {
                        // }
                     }
                 }
+                if (lista.isEmpty()) {
+                    System.out.println("Lista erores vacia");
+                    ast.Print("Ejecucion finalizada Archivo Validado Correctamente");
+                } else {
+                    System.out.println("Lista errores no vacia");
+                    ast.Print("Ejecucion finalizada Archivo con errores");
+                }
 
                 StyledDocument doc = jTextPane2.getStyledDocument();
                 String acumulado = "";
@@ -465,6 +472,8 @@ public class UI extends javax.swing.JFrame {
                 panelReportesSim.panelReporte(tabla);
 
                 System.out.println(ast.getConsola());
+
+                System.out.println("Errores");
                 for (var i : lista) {
                     System.out.println(i);
                 }
