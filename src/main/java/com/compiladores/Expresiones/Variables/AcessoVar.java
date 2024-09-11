@@ -60,6 +60,7 @@ public class AcessoVar extends Instruccion{
             return new Errores("SEMANTICA", "Variable no existente",this.linea, this.columna);
         }
         this.tipo.setTipo(valor.getTipo().getTipo());
+        arbol.Print("Acceso Correctamente");
         return valor.getValor();
     }
     

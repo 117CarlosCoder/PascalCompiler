@@ -64,6 +64,7 @@ public class Aritmeticas  extends Instruccion{
             default ->
                 new Errores("SEMANTICO", "Operador invalido", this.linea, this.columna);
         };
+
     }
     
     public Object suma(Object op1, Object op2 ) {

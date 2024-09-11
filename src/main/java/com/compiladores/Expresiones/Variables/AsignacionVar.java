@@ -137,6 +137,7 @@ public class AsignacionVar extends Instruccion{
             return new Errores("SEMANTICO", "Tipos erroneos en asignacion",this.linea, this.columna);
         }
         variable.setValor(nuevoValor);
+        arbol.Print("Asignacion Correctamente");
         return null; 
     }
     

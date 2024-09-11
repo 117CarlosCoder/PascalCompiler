@@ -114,6 +114,7 @@ public class Procedure extends Instruccion{
             System.out.println("2222222222222222222222");
             return this.expresion;
         }*/
+        arbol.Print("Procedure Correctamente");
         return null;
     }
     

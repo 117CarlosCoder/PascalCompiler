@@ -132,7 +132,7 @@ public class Llamada extends Instruccion {
             }*/
             
         }
-        
+        arbol.Print("Llamada Correctamente");
         return null;
     }
     

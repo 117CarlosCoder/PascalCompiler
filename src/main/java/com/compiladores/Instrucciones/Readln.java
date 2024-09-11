@@ -17,6 +17,7 @@ public class Readln extends Instruccion {
 
     @Override
     public Object interpretar(Arbol arbol, TablaSimbolos tabla) {
+        arbol.Print("Readln Correctamente");
         return null;
     }
 }

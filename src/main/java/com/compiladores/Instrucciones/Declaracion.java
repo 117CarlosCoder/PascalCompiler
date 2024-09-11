@@ -186,6 +186,7 @@ public class Declaracion extends Instruccion{
             return new Errores("SEMANTICO", "Variable ya existente", this.linea, this.columna);
         }
 
+        arbol.Print("Declaracion Correctamente");
         return null;
     }
 
