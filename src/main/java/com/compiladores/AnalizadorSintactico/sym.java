@@ -8,21 +8,21 @@ package com.compiladores.AnalizadorSintactico;
 /** CUP generated class containing symbol constants. */
 public class sym {
   /* terminals */
-  public static final int BOOL = 61;
-  public static final int REAL = 60;
+  public static final int BOOL = 62;
+  public static final int REAL = 61;
   public static final int PACKED = 34;
   public static final int TYPE = 30;
   public static final int CONST = 17;
-  public static final int DIFIGUAL = 43;
+  public static final int DIFIGUAL = 44;
   public static final int POTENCIA = 20;
   public static final int UNTIL = 41;
   public static final int DOBP = 9;
-  public static final int LEER = 69;
-  public static final int DECRE = 53;
-  public static final int MAYORIGQ = 47;
+  public static final int LEER = 70;
+  public static final int DECRE = 54;
+  public static final int MAYORIGQ = 48;
   public static final int FALSE = 19;
-  public static final int NOT = 51;
-  public static final int IGUALIGUAL = 42;
+  public static final int NOT = 52;
+  public static final int IGUALIGUAL = 43;
   public static final int ARRAY = 36;
   public static final int MULTI = 5;
   public static final int VAR = 16;
@@ -33,53 +33,54 @@ public class sym {
   public static final int PARA = 7;
   public static final int MOD = 21;
   public static final int COMA = 12;
-  public static final int ENTERO = 65;
+  public static final int ENTERO = 66;
   public static final int TRUE = 18;
   public static final int IGUAL = 10;
   public static final int WHILE = 25;
-  public static final int INCRE = 52;
-  public static final int DECIMAL = 66;
-  public static final int CHAR = 62;
-  public static final int IMPRIMIR = 63;
+  public static final int INCRE = 53;
+  public static final int DECIMAL = 67;
+  public static final int CHAR = 63;
+  public static final int IMPRIMIR = 64;
   public static final int DO = 27;
   public static final int FOR = 26;
   public static final int DIV = 4;
   public static final int RETURN = 28;
   public static final int ELSE = 29;
-  public static final int BREAK = 70;
-  public static final int INT = 58;
-  public static final int CORC = 57;
-  public static final int CORA = 56;
-  public static final int STRING_LITERAL = 64;
+  public static final int BREAK = 71;
+  public static final int PROCEDURE = 42;
+  public static final int INT = 59;
+  public static final int CORC = 58;
+  public static final int CORA = 57;
+  public static final int STRING_LITERAL = 65;
   public static final int EOF = 0;
   public static final int PUNTO = 13;
   public static final int DEFAULT = 22;
   public static final int SUMA = 2;
   public static final int REPEAT = 40;
   public static final int SUBRANGO = 15;
-  public static final int OR = 48;
+  public static final int OR = 49;
   public static final int error = 1;
   public static final int RESTA = 3;
-  public static final int MENORIGQ = 45;
-  public static final int CONTINUE = 71;
+  public static final int MENORIGQ = 46;
+  public static final int CONTINUE = 72;
   public static final int IF = 23;
-  public static final int ID = 68;
-  public static final int MENORQ = 44;
+  public static final int ID = 69;
+  public static final int MENORQ = 45;
   public static final int OF = 31;
   public static final int END = 33;
   public static final int UMENOS = 6;
-  public static final int MAYORQ = 46;
+  public static final int MAYORQ = 47;
   public static final int RANGO = 14;
-  public static final int CHAR_LITERAL = 67;
+  public static final int CHAR_LITERAL = 68;
   public static final int BEGIN = 32;
   public static final int CASE = 24;
-  public static final int CADENA = 59;
+  public static final int CADENA = 60;
   public static final int PROGRAM = 39;
-  public static final int AND = 49;
-  public static final int LLAVEC = 55;
+  public static final int AND = 50;
+  public static final int LLAVEC = 56;
   public static final int TO = 38;
-  public static final int LLAVEA = 54;
-  public static final int XOR = 50;
+  public static final int LLAVEA = 55;
+  public static final int XOR = 51;
   public static final String[] terminalNames = new String[] {
   "EOF",
   "error",
@@ -123,6 +124,7 @@ public class sym {
   "PROGRAM",
   "REPEAT",
   "UNTIL",
+  "PROCEDURE",
   "IGUALIGUAL",
   "DIFIGUAL",
   "MENORQ",

@@ -46,7 +46,21 @@ public class TablaSimbolos {
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
-    
+
+    public boolean setVariablesVector(Simbolo[] simbolo){
+        Simbolo busqueda = (Simbolo) this.tablaAct.get(simbolo[1].getId().toLowerCase());
+        System.out.println("Entorno : " + simbolo[1].getEntorno());
+        if (busqueda == null) {
+            this.tablaAct.put(simbolo[1].getId().toLowerCase(), simbolo);
+            return true;
+        }
+
+
+
+        return false;
+    }
+
+
     public boolean setVariable(Simbolo simbolo){
         Simbolo busqueda = (Simbolo) this.tablaAct.get(simbolo.getId().toLowerCase());
         System.out.println("Entorno : " + simbolo.getEntorno());
@@ -62,13 +76,32 @@ public class TablaSimbolos {
     
     public Simbolo getVariable(String ID){
         for (TablaSimbolos i  = this;  i != null; i= i.getTablaAnt()) {
-            Simbolo busqueda = (Simbolo) i.tablaAct.get(ID.toLowerCase());
-        
+            //Simbolo busqueda = (Simbolo) i.tablaAct.get(ID.toLowerCase());
+            Simbolo busqueda = null;
+            if (i.tablaAct.get(ID.toLowerCase()) instanceof Simbolo simbolo) {
+                busqueda  = simbolo;
+            }
             if (busqueda != null) {
                 return busqueda;
             }
         }
         
+        return null;
+    }
+
+    public Simbolo getVariableVector(String ID ,int index){
+        for (TablaSimbolos i  = this;  i != null; i= i.getTablaAnt()) {
+            Simbolo busqueda = null;
+            System.out.println("Id  =  " + ID + " Index = " + index);
+            if (i.tablaAct.get(ID.toLowerCase()) instanceof  Simbolo[] simbolos) {
+                busqueda  = simbolos[index];
+            }
+
+            if (busqueda != null) {
+                return busqueda;
+            }
+        }
+
         return null;
     }
 

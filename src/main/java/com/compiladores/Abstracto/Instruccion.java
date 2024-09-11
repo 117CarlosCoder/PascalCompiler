@@ -5,10 +5,6 @@ import com.compiladores.Simbolo.Arbol;
 import com.compiladores.Simbolo.TablaSimbolos;
 import com.compiladores.Simbolo.Tipo;
 
-/**
- *
- * @author carlosl
- */
 public abstract class Instruccion {
     
     public Tipo tipo;

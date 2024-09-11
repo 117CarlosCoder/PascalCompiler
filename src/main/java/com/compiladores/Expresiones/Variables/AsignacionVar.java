@@ -12,6 +12,7 @@ public class AsignacionVar extends Instruccion{
 
     private String id;
     private String exp;
+    private Instruccion index;
     private Instruccion expresion;
 
     public AsignacionVar(String id, Instruccion expresion, int linea, int columna) {
@@ -25,10 +26,44 @@ public class AsignacionVar extends Instruccion{
         this.id = id;
         this.exp = exp;
     }
+
+    public AsignacionVar(String id, Instruccion index, Instruccion expresion, int linea, int columna) {
+        super(new Tipo(TipoDato.VOID), linea, columna);
+        this.id = id;
+        this.index = index;
+        this.expresion = expresion;
+    }
     
     
     @Override
     public Object interpretar(Arbol arbol, TablaSimbolos tabla) {
+
+        if (this.index != null ) {
+            var valorindex =  this.index.interpretar(arbol, tabla);
+            var variable = tabla.getVariableVector(id, (int)valorindex);
+            if (variable == null) {
+                return new Errores("SEMANTICO", "Variable no existente", this.linea, this.columna);
+            }
+
+            if (!variable.isMutabilidad()) {
+                return new Errores("SEMANTICO", "La Constate no puede modificar su valor", this.linea, this.columna);
+            }
+
+            var nuevoValor = this.expresion.interpretar(arbol, tabla);
+            if (nuevoValor instanceof Errores) {
+                return nuevoValor;
+            }
+
+            if (variable.getTipo().getTipo() != this.expresion.tipo.getTipo()) {
+                return new Errores("SEMANTICO", "Tipos erroneos en asignacion", this.linea, this.columna);
+            }
+
+            variable.setValor(nuevoValor);
+
+            return null;
+
+        }
+
         var variable = tabla.getVariable(id);
         
         if (variable == null) {

@@ -82,18 +82,35 @@ public class ReporteSimbolos extends javax.swing.JPanel {
         for (Map.Entry<String, Object> entry : mapa.entrySet()) {
             String key = entry.getKey();
             Object value = entry.getValue();
-            
+
             Object[] row = new Object[8];
-            row[0] = i++;
-            row[1] = key;
-            row[2] = ((Simbolo)value).getTipoDeclaracion();
-            row[3] = ((Simbolo)value).getTipo().getTipo();
-            row[4] = tablas.getNombre();
-            row[5] = ((Simbolo)value).getValor();
-            row[6] = ((Simbolo)value).getLinea();
-            row[7] = ((Simbolo)value).getColumna();
-            modelo.addRow(row);
-            
+            if (value instanceof Simbolo simbolo) {
+                row[0] = i++;
+                row[1] = key;
+                row[2] = simbolo.getTipoDeclaracion();
+                row[3] = simbolo.getTipo().getTipo();
+                row[4] = tablas.getNombre();
+                row[5] = simbolo.getValor();
+                row[6] = simbolo.getLinea();
+                row[7] = simbolo.getColumna();
+                modelo.addRow(row);
+
+            }
+
+            if (value instanceof LinkedList simbolos) {
+                for (Object simbolo : simbolos) {
+                    row[0] = i++;
+                    row[1] = key;
+                    row[2] = ((Simbolo) simbolo).getTipoDeclaracion();
+                    row[3] = ((Simbolo) simbolo).getTipo().getTipo();
+                    row[4] = tablas.getNombre();
+                    row[5] = ((Simbolo) simbolo).getValor();
+                    row[6] = ((Simbolo) simbolo).getLinea();
+                    row[7] = ((Simbolo) simbolo).getColumna();
+                    modelo.addRow(row);
+                }
+            }
+
             System.out.println("Clave: " + key + ", Valor: " + value);
         }
         
@@ -104,30 +121,51 @@ public class ReporteSimbolos extends javax.swing.JPanel {
     public void multiplesTablas(LinkedList<TablaSimbolos> tablas,int i){
         DefaultTableModel modelo = (DefaultTableModel) jTable1.getModel();
         for (TablaSimbolos tablasn : tablas) {
-                HashMap<String, Object> mapa2 = tablasn.getTablaAct();
-                for (Map.Entry<String, Object> entry : mapa2.entrySet()) {
-                    String key = entry.getKey();
-                    Object value = entry.getValue();
+            HashMap<String, Object> mapa2 = tablasn.getTablaAct();
+            for (Map.Entry<String, Object> entry : mapa2.entrySet()) {
+                String key = entry.getKey();
+                Object value = entry.getValue();
 
-                    Object[] row = new Object[8];
+                Object[] row = new Object[8];
+                if (value instanceof Simbolo simbolo ) {
                     row[0] = i++;
                     row[1] = key;
-                    row[2] = ((Simbolo)value).getTipoDeclaracion();
-                    row[3] = ((Simbolo)value).getTipo().getTipo();
+                    row[2] = simbolo.getTipoDeclaracion();
+                    row[3] = simbolo.getTipo().getTipo();
                     row[4] = tablasn.getNombre();
-                    row[5] = ((Simbolo)value).getValor();
-                    row[6] = ((Simbolo)value).getLinea();
-                    row[7] = ((Simbolo)value).getColumna();
+                    row[5] = simbolo.getValor();
+                    row[6] = simbolo.getLinea();
+                    row[7] = simbolo.getColumna();
                     modelo.addRow(row);
 
                     System.out.println("Clave: " + key + ", Valor: " + value);
                     if (!tablasn.getTablasTotales().isEmpty()) {
                         multiplesTablas(tablasn.getTablasTotales(),i);
-                    }               
+                    }
                 }
-                if (!tablasn.getTablasTotales().isEmpty()) {
-                        multiplesTablas(tablasn.getTablasTotales(),i);
-                }    
+                if (value instanceof LinkedList simbolos) {
+                    for (Object simbolo : simbolos) {
+                        row[0] = i++;
+                        row[1] = key;
+                        row[2] = ((Simbolo)simbolo).getTipoDeclaracion();
+                        row[3] = ((Simbolo)simbolo).getTipo().getTipo();
+                        row[4] = tablasn.getNombre();
+                        row[5] = ((Simbolo)simbolo).getValor();
+                        row[6] = ((Simbolo)simbolo).getLinea();
+                        row[7] = ((Simbolo)simbolo).getColumna();
+                        modelo.addRow(row);
+
+                        System.out.println("Clave: " + key + ", Valor: " + value);
+                        if (!tablasn.getTablasTotales().isEmpty()) {
+                            multiplesTablas(tablasn.getTablasTotales(), i);
+                        }
+                    }
+                }
+
+            }
+            if (!tablasn.getTablasTotales().isEmpty()) {
+                multiplesTablas(tablasn.getTablasTotales(),i);
+            }
         }
     }
 

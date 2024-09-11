@@ -88,6 +88,7 @@ Id = [a-zA-Z_][a-zA-Z0-9_-]*
 <YYINITIAL> "to" { return new Symbol(sym.TO, yyline,yycolumn, yytext()); }
 <YYINITIAL> "repeat" { return new Symbol(sym.REPEAT, yyline,yycolumn, yytext()); }
 <YYINITIAL> "until" { return new Symbol(sym.UNTIL, yyline,yycolumn, yytext()); }
+<YYINITIAL> "procedure" { return new Symbol(sym.PROCEDURE, yyline,yycolumn, yytext()); }
 
 <YYINITIAL>{
 

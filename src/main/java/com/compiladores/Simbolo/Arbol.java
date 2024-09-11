@@ -3,6 +3,7 @@ package com.compiladores.Simbolo;
 
 import com.compiladores.Abstracto.Instruccion;
 import com.compiladores.Excepciones.Errores;
+import com.compiladores.Instrucciones.Procedure;
 
 import java.util.LinkedList;
 
@@ -11,12 +12,14 @@ public class Arbol {
     private String consola;
     private TablaSimbolos tablaGlobal;
     private LinkedList<Errores> errores;
+    private LinkedList<Instruccion> funciones;
 
     public Arbol(LinkedList<Instruccion> instrucciones) {
         this.instrucciones = instrucciones;
         this.consola = "";
         this.tablaGlobal = new TablaSimbolos();
         this.errores = new LinkedList<>();
+        this.funciones =  new LinkedList<>();
     }
 
     public LinkedList<Instruccion> getInstrucciones() {
@@ -53,5 +56,23 @@ public class Arbol {
     
     public void Print(String valor) {
         this.consola += valor + "\n";
+    }
+
+    public void addFunciones(Instruccion funcion){
+        /*if (this.getFuncion(funcion.)) {
+
+        }*/
+        this.funciones.add(funcion);
+    }
+
+    public Instruccion getFuncion(String id){
+        for (var i : this.funciones) {
+            if (i instanceof Procedure metodo) {
+                if (metodo.id.equalsIgnoreCase(id)) {
+                    return i;
+                }
+            }
+        }
+        return null;
     }
 }

@@ -5,6 +5,8 @@ import com.compiladores.Abstracto.Instruccion;
 import com.compiladores.AnalizadorLexico.Lexico;
 import com.compiladores.AnalizadorSintactico.parser;
 import com.compiladores.Excepciones.Errores;
+import com.compiladores.Instrucciones.Declaracion;
+import com.compiladores.Instrucciones.Procedure;
 import com.compiladores.Simbolo.Arbol;
 import com.compiladores.Simbolo.TablaSimbolos;
 
@@ -385,6 +387,8 @@ public class UI extends javax.swing.JFrame {
 
                 tabla.setNombre("GLOBAL");
                 ast.setConsola("");
+                ast.setTablaGlobal(tabla);
+
                 LinkedList<Errores> lista = new LinkedList<>();
                 lista.addAll(s.listaErrores);
                 lista.addAll(p.listaErrores);
@@ -395,9 +399,55 @@ public class UI extends javax.swing.JFrame {
                         continue;
                     }
 
-                    var res = a.interpretar(ast, tabla);
+                   /* if (a instanceof Declaracion) {
+
+                            var res = a.interpretar(ast, tabla);
+                            if (res instanceof Errores errores) {
+                                lista.add(errores);
+                            }
+
+
+                    }*/
+
+                    if (a instanceof Procedure ) {
+                        ast.addFunciones(a);
+                    }
+
+                    /*var res = a.interpretar(ast, tabla);
                     if (res instanceof Errores errores) {
                         lista.add(errores);
+                    }*/
+                }
+                System.out.println(ast.getInstrucciones());
+                for (var a : ast.getInstrucciones()) {
+
+
+
+                    if (a == null) {
+                        continue;
+                    }
+
+                    if (!(a instanceof Procedure)) {
+                        /*if (a instanceof Declaracion) {
+                            if (!((Declaracion) a).entorno.equals("Procedure")) {
+                                var res = a.interpretar(ast, tabla);
+                                if (res instanceof Errores errores) {
+                                    lista.add(errores);
+                                }
+                            }else{
+                                var res = a.interpretar(ast, tabla);
+                                if (res instanceof Errores errores) {
+                                    lista.add(errores);
+                                }
+                            }
+
+                        }
+                        else {*/
+                            var res = a.interpretar(ast, tabla);
+                            if (res instanceof Errores errores) {
+                                lista.add(errores);
+                            }
+                       // }
                     }
                 }
 
