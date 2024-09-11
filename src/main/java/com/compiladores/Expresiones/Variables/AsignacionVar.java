@@ -33,6 +33,13 @@ public class AsignacionVar extends Instruccion{
         this.index = index;
         this.expresion = expresion;
     }
+
+    public AsignacionVar(String id, Instruccion index, Instruccion expresion,Tipo tipo, int linea, int columna) {
+        super(tipo, linea, columna);
+        this.id = id;
+        this.index = index;
+        this.expresion = expresion;
+    }
     
     
     @Override

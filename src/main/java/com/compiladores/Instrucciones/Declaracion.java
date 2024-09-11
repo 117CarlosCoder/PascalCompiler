@@ -72,6 +72,13 @@ public class Declaracion extends Instruccion{
         System.out.println("Entorno ingresado : " + entorno);
     }
 
+    public Declaracion(String mutabilidad, String identificador,Tipo tipo, LinkedList<Instruccion> valores, String TipoDec, int linea, int columna) {
+        super(tipo, linea, columna);
+        this.identificador = identificador;
+        this.mutabilidad = mutabilidad;
+        this.valores = valores;
+        this.TipoDec = TipoDec;
+    }
 
     public Declaracion(String mutabilidad, String identificador, Tipo tipo, String TipoDec, String vinicial , String vfinal, int linea, int columna) {
         super(tipo, linea, columna);
@@ -85,45 +92,38 @@ public class Declaracion extends Instruccion{
     @Override
     public Object interpretar(Arbol arbol, TablaSimbolos tabla) {
         Simbolo[] simbolos = null;
-        if (!vfinal.isEmpty()){
-             simbolos = new Simbolo[Integer.parseInt(vfinal)];
-        }
 
+
+        System.out.println("Tipo declaracion: " + TipoDec);
        if (TipoDec.equals("vector")) {
-            if (valores != null) {
 
-                for (Instruccion valori : this.valores) {
-                    System.out.println("Inicio");
+           if (!vfinal.isEmpty()){
+               System.out.println("Vfinal: " + vfinal);
+               simbolos = new Simbolo[Integer.parseInt(vfinal)+1];
+           }
 
-                    var interpretarValor = valori.interpretar(arbol, tabla);
-                    if (interpretarValor instanceof Errores) {
-                        return interpretarValor;
+/*           for (int i = 0; i < Integer.parseInt(vfinal); i++) {
 
-                    }
 
-                    if (valori.tipo.getTipo() != this.tipo.getTipo()) {
-                        return new Errores("SEMANTICO", "Tipos erroneos", this.linea, this.columna);
-                    }
+           }*/
+           boolean mutabilidadVar = this.mutabilidad.equals("var");
+           Simbolo simb = new Simbolo(this.tipo, this.mutabilidad, this.identificador, null, this.linea, this.columna, mutabilidadVar, entorno);
+           assert simbolos != null;
+           simbolos[0] = simb;
+           for (int i = 1; i < simbolos.length; i++) {
+               simbolos[i] = new Simbolo(this.tipo, this.mutabilidad, this.identificador, null, this.linea, this.columna, mutabilidadVar, entorno);
+           }
+           System.out.println("Valor agregado a la lista");
+           System.out.println("Vector a tabla ");
+           System.out.println(simbolos.length);
+           boolean creacion = tabla.setVariablesVector(simbolos);
+           System.out.println("Vector agregado ");
+           if (!creacion) {
+               return new Errores("SEMANTICO", "Vector ya existente", this.linea, this.columna);
+           }
 
-                    System.out.println("Medio");
-
-                    boolean mutabilidadVar = this.mutabilidad.equals("var");
-                    Simbolo simb = new Simbolo(this.tipo, this.mutabilidad, this.identificador, interpretarValor, this.linea, this.columna, mutabilidadVar, entorno);
-                    simbolos[Integer.parseInt(vincial)] = simb;
-                    System.out.println("Valor agregado a la lista");
-
-                }
-
-                System.out.println("Vector a tabla ");
-                boolean creacion = tabla.setVariablesVector(simbolos);
-                System.out.println("Vector agregado ");
-                if (!creacion) {
-                    return new Errores("SEMANTICO", "Vector ya existente", this.linea, this.columna);
-                }
-                vincial =Integer.parseInt(vincial) + 1 + "";
-                return null;
-            }
-        }
+           return null;
+       }
 
         if(this.valor == null){
             if(this.tipo.getTipo()== TipoDato.ENTERO){

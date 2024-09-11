@@ -167,6 +167,7 @@ expresion ::= RESTA expresion:a             {:   RESULT = new Aritmeticas(a, Ope
             | CHAR_LITERAL:a      {:  RESULT = new Nativo(a, new Tipo(TipoDato.CARACTER), aleft, aright );   :}
             | booleanos:a      {:   RESULT = new Nativo(a, new Tipo(TipoDato.BOOLEANO), aleft, aright );   :}
             | ID:a          {:  RESULT = new AcessoVar(a,aleft, aright);:}
+            | ID:a CORA expresion:b CORC          {:  RESULT = new AcessoVar(a,b,aleft, aright);:}
 ;
 
 llamadas ::=
@@ -298,7 +299,7 @@ variables ::=
     ID:a listaids:b DOBP tipo:c IGUAL expresion:d  {: RESULT = new LinkedList<>(Arrays.asList( new Declaracion(tipoD,a,d, c, aleft, aright))); if(b!=null){for(String ins: b){RESULT.addLast(new Declaracion(tipoD,ins,d, c, bleft, bright));}} :}
    |ID:a listaids:b IGUAL expresion:c  {: RESULT = new LinkedList<>(Arrays.asList(  new Declaracion(tipoD, a, c, aleft, aright)));  if(b!=null){for(String ins: b){RESULT.addLast(new Declaracion(tipoD,ins, c, bleft, bright));}}:}
    |ID:a listaids:b DOBP tipo:c {: RESULT =new LinkedList<>(Arrays.asList( new Declaracion(tipoD, a, c, aleft, aright))); if (b!=null){for (String ins :b){RESULT.addLast(new Declaracion(tipoD, ins,c, bleft, bright));}}:}
-   |ID:a listaids:b DOBP ARRAY CORA ENTERO:c RANGO ENTERO:d CORC OF tipo:e CORC CIERRE {:RESULT =new LinkedList<>(Arrays.asList(  new Declaracion(tipoD, a, e, "vector", c, d, aleft, aright))); System.out.println(d); {for (String ins :b){RESULT.addLast(new Declaracion(tipoD, ins, e, "vector", c, d, bleft, bright));}}:}
+   |ID:a listaids:b DOBP ARRAY CORA ENTERO:c RANGO ENTERO:d CORC OF tipo:e   {:RESULT =new LinkedList<>(Arrays.asList(  new Declaracion(tipoD, a, e, "vector", c, d, aleft, aright))); System.out.println(d); if (b!=null){for (String ins :b){RESULT.addLast(new Declaracion(tipoD, ins, e, "vector", c, d, bleft, bright));}}:}
 ;
 
 listaids ::=
@@ -319,8 +320,7 @@ declaracionrango ::=
 ;
 
 declaracionarreglo ::=
-    ID:a COMA declaracionrango:b {: :}
-   |ID:a IGUAL ARRAY CORA expresion:b RANGO expresion:c CORC OF tipo:d CIERRE
+   ID:a IGUAL ARRAY CORA expresion:b RANGO expresion:c CORC OF tipo:d CIERRE {: RESULT = new AsignacionVar(a, b, c,d, aleft, aright);  :}
 ;
 
 screcords ::=
@@ -337,7 +337,7 @@ declaracionrecord ::=
 asignacion ::= 
     ID:a DOBP IGUAL expresion:b  {: RESULT = new AsignacionVar(a, b, aleft, aright);  :}
    //|ID:a IGUAL llamadas:b  {: RESULT = new AsignacionVar(a, b, aleft, aright);  :}
-   |ID:a CORA expresion:b CORC DOBP IGUAL expresion:c CIERRE {: RESULT = new AsignacionVar(a, b, c, aleft, aright);  :}
+   |ID:a CORA expresion:b CORC DOBP IGUAL expresion:c  {: RESULT = new AsignacionVar(a, b, c, aleft, aright);  :}
 ;
 
 cfor ::= 

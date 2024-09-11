@@ -1,6 +1,7 @@
 
 package com.compiladores.Simbolo;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -48,10 +49,10 @@ public class TablaSimbolos {
     }
 
     public boolean setVariablesVector(Simbolo[] simbolo){
-        Simbolo busqueda = (Simbolo) this.tablaAct.get(simbolo[1].getId().toLowerCase());
-        System.out.println("Entorno : " + simbolo[1].getEntorno());
+        Simbolo busqueda = (Simbolo) this.tablaAct.get(simbolo[0].getId().toLowerCase());
+        System.out.println("Entorno : " + simbolo[0].getEntorno());
         if (busqueda == null) {
-            this.tablaAct.put(simbolo[1].getId().toLowerCase(), simbolo);
+            this.tablaAct.put(simbolo[0].getId().toLowerCase(), simbolo);
             return true;
         }
 
@@ -93,7 +94,10 @@ public class TablaSimbolos {
         for (TablaSimbolos i  = this;  i != null; i= i.getTablaAnt()) {
             Simbolo busqueda = null;
             System.out.println("Id  =  " + ID + " Index = " + index);
+            System.out.println(i);
+            System.out.println(i.tablaAct.get(ID.toLowerCase()));
             if (i.tablaAct.get(ID.toLowerCase()) instanceof  Simbolo[] simbolos) {
+                System.out.println(Arrays.toString(simbolos));
                 busqueda  = simbolos[index];
             }
 
